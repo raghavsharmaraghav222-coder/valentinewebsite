@@ -1,0 +1,288 @@
+
+import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import { Step } from './types';
+import ProgressBar from './components/ProgressBar';
+import FloatingHearts from './components/FloatingHearts';
+
+const App: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState<Step>(Step.Welcome);
+  const [isCelebrated, setIsCelebrated] = useState(false);
+
+  const nextStep = useCallback(() => {
+    setCurrentStep((prev) => (prev < Step.Celebration ? prev + 1 : prev));
+  }, []);
+
+  const handleCelebrate = useCallback(() => {
+    setIsCelebrated(true);
+    
+    // Initial big blast
+    const duration = 15 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      // Confetti from corners
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      
+      // Random heart confetti
+      confetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#ff0000', '#ff69b4'],
+        shapes: ['circle']
+      });
+      confetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#ff0000', '#ff69b4'],
+        shapes: ['circle']
+      });
+    }, 250);
+
+    setTimeout(() => {
+      setCurrentStep(Step.Celebration);
+    }, 100);
+  }, []);
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case Step.Welcome:
+        return (
+          <motion.div
+            key="step-welcome"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex flex-col items-center text-center space-y-8"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="text-8xl drop-shadow-[0_0_30px_rgba(236,72,153,0.8)]"
+            >
+              ❤️
+            </motion.div>
+            <h1 className="font-serif text-5xl md:text-6xl text-white">Hey Love 💕</h1>
+            <p className="text-pink-100 text-lg md:text-xl font-light max-w-md">
+              I made a little world just for you.
+            </p>
+            <button onClick={nextStep} className="btn-romantic px-10 py-4 rounded-full text-white font-semibold text-lg uppercase tracking-wider">
+              Start the Journey
+            </button>
+          </motion.div>
+        );
+
+      case Step.RoseDay:
+        return (
+          <motion.div
+            key="step-rose"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, x: -100 }}
+            className="glass p-10 rounded-3xl max-w-md w-full text-center space-y-8"
+          >
+            <span className="text-7xl block">🌹</span>
+            <p className="font-serif italic text-2xl text-pink-50 leading-relaxed">
+              "Like a rose, you make everything around you more beautiful."
+            </p>
+            <button onClick={nextStep} className="btn-romantic px-10 py-3 rounded-full text-white font-semibold">
+              Next
+            </button>
+          </motion.div>
+        );
+
+      case Step.ProposeDay:
+        return (
+          <motion.div
+            key="step-propose"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, y: -100 }}
+            className="glass p-10 rounded-3xl max-w-md w-full text-center space-y-8"
+          >
+            <span className="text-7xl block">💍</span>
+            <p className="font-serif italic text-2xl text-pink-50 leading-relaxed">
+              "I don’t need a perfect moment, I just need you."
+            </p>
+            <button onClick={nextStep} className="btn-romantic px-10 py-3 rounded-full text-white font-semibold">
+              Next
+            </button>
+          </motion.div>
+        );
+
+      case Step.HugKissDay:
+        return (
+          <motion.div
+            key="step-hug-kiss"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="glass p-10 rounded-3xl max-w-md w-full text-center space-y-8"
+          >
+            <div className="flex justify-center gap-4">
+              <span className="text-7xl">🤗</span>
+              <span className="text-7xl">💋</span>
+            </div>
+            <p className="font-serif italic text-2xl text-pink-50 leading-relaxed">
+              "Every hug of yours feels like home."
+            </p>
+            <button onClick={nextStep} className="btn-romantic px-10 py-3 rounded-full text-white font-semibold">
+              Next
+            </button>
+          </motion.div>
+        );
+
+      case Step.Reasons:
+        const reasons = [
+          { emoji: '💗', title: 'Your Smile', desc: 'It lights up everything.' },
+          { emoji: '✨', title: 'Your Kind Heart', desc: 'Pure and rare.' },
+          { emoji: '🌸', title: 'The Way You Are', desc: 'Perfectly you.' },
+        ];
+        return (
+          <motion.div
+            key="step-reasons"
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="w-full max-w-4xl px-4 space-y-8"
+          >
+            <h2 className="font-serif text-4xl text-white text-center mb-8">Reasons I Love You</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {reasons.map((r, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2 }}
+                  className="glass p-8 rounded-3xl text-center flex flex-col items-center space-y-4 hover:border-pink-500/50 transition-colors"
+                >
+                  <span className="text-5xl">{r.emoji}</span>
+                  <h3 className="text-xl font-bold text-pink-400">{r.title}</h3>
+                  <p className="text-pink-100/80">{r.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+            <div className="flex justify-center mt-12">
+              <button onClick={nextStep} className="btn-romantic px-10 py-3 rounded-full text-white font-semibold">
+                One More Thing
+              </button>
+            </div>
+          </motion.div>
+        );
+
+      case Step.Memory:
+        return (
+          <motion.div
+            key="step-memory"
+            initial={{ opacity: 0, rotate: -5 }}
+            animate={{ opacity: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            className="w-full max-w-lg px-4 flex flex-col items-center space-y-8"
+          >
+            <motion.div 
+              whileHover={{ rotate: 2, scale: 1.02 }}
+              className="bg-white p-4 pb-12 shadow-2xl rounded-sm transform rotate-[-2deg] flex flex-col items-center space-y-4"
+            >
+              <div className="w-full aspect-[4/5] bg-gray-200 overflow-hidden relative">
+                <img 
+                  src="https://picsum.photos/800/1000?romantic=1" 
+                  alt="Romantic memory" 
+                  className="w-full h-full object-cover grayscale-[0.2] sepia-[0.1]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              </div>
+              <p className="font-serif text-2xl text-gray-800 italic">Our favorite memory 💞</p>
+            </motion.div>
+            <p className="text-white text-xl font-serif text-center italic max-w-sm">
+              "Every moment with you feels like a movie scene."
+            </p>
+            <button onClick={nextStep} className="btn-romantic px-10 py-3 rounded-full text-white font-semibold">
+              Final Surprise
+            </button>
+          </motion.div>
+        );
+
+      case Step.Finale:
+        return (
+          <motion.div
+            key="step-finale"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass p-12 rounded-[3rem] max-w-lg w-full text-center space-y-10"
+          >
+            <div className="flex justify-center gap-4 text-6xl">
+              <span>🎂</span>
+              <span>❤️</span>
+            </div>
+            <h2 className="font-serif text-5xl text-white">My Wish For You</h2>
+            <p className="text-pink-50 text-xl font-light leading-relaxed">
+              May your life be filled with love, happiness, and endless smiles.
+            </p>
+            <button onClick={handleCelebrate} className="btn-romantic px-12 py-4 rounded-full text-white font-bold text-xl uppercase shadow-lg">
+              Celebrate!
+            </button>
+          </motion.div>
+        );
+
+      case Step.Celebration:
+        return (
+          <motion.div
+            key="step-celebrated"
+            initial={{ opacity: 0, scale: 1.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-8 px-4"
+          >
+             <h1 className="font-serif text-5xl md:text-7xl text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
+              Happy Valentine’s Day,<br/>My Love ❤️
+            </h1>
+            <motion.p
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+              className="text-pink-300 text-lg md:text-2xl italic"
+            >
+              You mean the world to me.
+            </motion.p>
+          </motion.div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="relative min-h-screen w-full flex items-center justify-center animated-bg overflow-hidden p-4">
+      <ProgressBar currentStep={currentStep} totalSteps={8} />
+      
+      {/* Background Hearts - more intense on Hug/Kiss or final step */}
+      <FloatingHearts intensity={(currentStep === Step.HugKissDay || currentStep >= Step.Finale) ? 'high' : 'low'} count={currentStep >= Step.Finale ? 30 : 15} />
+
+      <main className="relative z-10 w-full flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          {renderStep()}
+        </AnimatePresence>
+      </main>
+
+      {/* Subtle bottom gradients */}
+      <div className="fixed bottom-0 left-0 w-full h-1/4 bg-gradient-to-t from-pink-900/20 to-transparent pointer-events-none" />
+    </div>
+  );
+};
+
+export default App;
